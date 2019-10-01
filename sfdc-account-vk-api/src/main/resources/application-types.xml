@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="Account_json" format="json">
+      <types:shape format="weave" example="examples/AccountExample.json"><![CDATA[%dw 2.0
+
+type Account_json = {|
+  id: String, 
+  accountName: String, 
+  accountNumber: String, 
+  ownerFirstName: String, 
+  ownerLastname: String, 
+  accountSite: String, 
+  active: String, 
+  accountType: String, 
+  createdDate: String, 
+  createdBy: String, 
+  billingAddress: {|
+    addressLine1: String, 
+    addressLine2: String, 
+    city: String, 
+    zipCode: String, 
+    state: String, 
+    country: String
+  |}, 
+  shippingAddress: {|
+    addressLine1: String, 
+    addressLine2: String, 
+    city: String, 
+    zipCode: String, 
+    state: String, 
+    country: String
+  |}, 
+  lastModifiedDate: String, 
+  lastModifiedID: String
+|} {"example": "{\"id\":\"89a65789a109G\",\"accountName\":\"Burlington Textiles Corp of America\",\"accountNumber\":\"CD656092\",\"ownerFirstName\":\"John\",\"ownerLastname\":\"Doe\",\"accountSite\":\"RAL09019\",\"active\":\"Y\",\"accountType\":\"Customer-Direct\",\"createdDate\":\"2019-09-10T14:00:00.000Z\",\"createdBy\":\"vk6774\",\"billingAddress\":{\"addressLine1\":\"6900 Legacy Drive\",\"addressLine2\":\"\",\"city\":\"Plano\",\"zipCode\":\"75024\",\"state\":\"TX\",\"country\":\"USA\"},\"shippingAddress\":{\"addressLine1\":\"8104 McArthur Road\",\"addressLine2\":\"\",\"city\":\"irving\",\"zipCode\":\"70253\",\"state\":\"TX\",\"country\":\"USA\"},\"lastModifiedDate\":\"2019-09-10T14:00:00.000Z\",\"lastModifiedID\":\"4A9a65789a109K\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="account_create_json" format="json">
+      <types:shape format="weave" example="api/examples/CreateAccountsExample.json"><![CDATA[%dw 2.0
+
+type account_create_json = {|
+  accountName: String, 
+  accountNumber: String, 
+  ownerFirstName: String, 
+  ownerLastname: String, 
+  accountSite: String, 
+  accountType: String, 
+  createdDate: String, 
+  createdBy: String, 
+  billingAddress: {|
+    addressLine1: String, 
+    addressLine2: String, 
+    city: String, 
+    zipCode: String, 
+    state: String, 
+    country: String
+  |}, 
+  shippingAddress: {|
+    addressLine1: String, 
+    addressLine2: String, 
+    city: String, 
+    zipCode: String, 
+    state: String, 
+    country: String
+  |}
+|} {"example": "{\"accountName\":\"BIG Canada\",\"accountNumber\":\"BIGCAN110\",\"ownerFirstName\":\"Mary\",\"ownerLastname\":\"Kondo\",\"accountSite\":\"CAN110Y\",\"accountType\":\"Customer-Direct\",\"createdDate\":\"2019-09-10T14:00:00.000Z\",\"createdBy\":\"vk6774\",\"billingAddress\":{\"addressLine1\":\"6900 Legacy Drive\",\"addressLine2\":\"\",\"city\":\"Plano\",\"zipCode\":\"75024\",\"state\":\"TX\",\"country\":\"USA\"},\"shippingAddress\":{\"addressLine1\":\"8104 McArthur Road\",\"addressLine2\":\"\",\"city\":\"irving\",\"zipCode\":\"70253\",\"state\":\"TX\",\"country\":\"USA\"}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="post_Response_json" format="json">
+      <types:shape format="weave" example="examples/Post_response_Json.json"><![CDATA[%dw 2.0
+
+type post_Response_json = Array<{|  id: String,   message: String|}> {"example": "[{\"id\":\"2A342\",\"message\":\"Successfully Created Account\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="account_update_json" format="json">
+      <types:shape format="weave" example="api/examples/UpdateAccountsExample.json"><![CDATA[%dw 2.0
+
+type account_update_json = Array<{|  accountName: String,   accountNumber: String,   ownerFirstName: String,   ownerLastname: String,   accountSite: String,   accountType: String,   createdDate: String,   createdBy: String,   billingAddress: {|    addressLine1: String,     addressLine2: String,     city: String,     zipCode: String,     state: String,     country: String  |},   shippingAddress: {|    addressLine1: String,     addressLine2: String,     city: String,     zipCode: String,     state: String,     country: String  |}|}> {"example": "[{\"accountName\":\"BIG Canada\",\"accountNumber\":\"BIGCAN110\",\"ownerFirstName\":\"Mary\",\"ownerLastname\":\"Kondo\",\"accountSite\":\"CAN110Y\",\"accountType\":\"Customer-Direct\",\"createdDate\":\"2019-09-10T14:00:00.000Z\",\"createdBy\":\"vk6774\",\"billingAddress\":{\"addressLine1\":\"6900 Legacy Drive\",\"addressLine2\":\"\",\"city\":\"Plano\",\"zipCode\":\"75024\",\"state\":\"TX\",\"country\":\"USA\"},\"shippingAddress\":{\"addressLine1\":\"8104 McArthur Road\",\"addressLine2\":\"\",\"city\":\"irving\",\"zipCode\":\"70253\",\"state\":\"TX\",\"country\":\"USA\"}}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="put_response_json" format="json">
+      <types:shape format="weave" example="examples/Put_response_Json.json"><![CDATA[%dw 2.0
+
+type put_response_json = Array<{|  id: String,   message: String|}> {"example": "[{\"id\":\"2A342\",\"message\":\"Successfully Updated Account\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="variable_object" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="delete_id_obj" format="json">
+      <types:shape format="weave" example="examples/Delete_id_json.json"><![CDATA[%dw 2.0
+
+type delete_id_obj = Array<{| id: String |}> {"example": "[{\"id\":\"2A342\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="createAccountError_Json" format="json">
+      <types:shape format="weave" example="examples/CreateAccountsErrorExample.json"><![CDATA[%dw 2.0
+
+type createAccountError_Json = Array<{|  error: Array<Any>, 
+  id: String, 
+  success: String
+|}> {"example": "[{\"error\":[],\"id\":\" 12345\",\"success\":\"true\"}]"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#6f018bba-26ae-4fb8-b45f-aa56da79f840">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Account_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f7438bfc-5e96-4192-a163-e3b79d20ae98">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="account_create_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#794251fa-52ed-4ebc-a63a-3adfb3015b0d">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="post_Response_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#0646a4c9-0e43-429e-889d-56c45abbc2a8">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="account_create_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#479c0a7c-6c9c-49a5-b895-8d846dfb966c">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Account_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#36e374ab-4695-446e-9bfb-aae48b6eeed9">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="put_response_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#830218cc-2aa5-4ec8-a6ce-bb32ab9154d4">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="updInput" type="account_create_json"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#5416317c-ecf7-489b-be5c-d69090655b5e">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="put_response_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#275ae3a1-30b6-43df-857c-7def4de659a1">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="inputVar" type="account_create_json"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#59d6eddd-e247-431a-9652-bacf44a1eddd">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="delete_id_obj"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#3559f5c1-4877-4360-9c13-465589e561c2">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="post_Response_json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

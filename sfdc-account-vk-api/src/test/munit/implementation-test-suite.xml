@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="implementation-test-suite.xml" />
+	<munit:test name="implementation-test-suite-postAccountFlowTest" doc:id="03f88d31-f6e8-4283-88dd-ba5371960c42" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="96600243-0acd-47df-85e7-a94a8e6441bc" processor="flow">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="post:\accounts:sfdc-accounts-vk-apiraml-config" attributeName="name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[payload]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="3f81890a-8322-4274-b4ed-52cf3d769e69" >
+				<munit:payload value='{
+  "accountName": "CanadaToR",
+  "accountNumber": "BI99YONGE",
+  "accountSite": "112YONTARIO13",
+  "accountType": "Customer - Channel",
+  "billingAddress": {
+    "addressLine1": "6810 Preston Road",
+    "addressLine2": "Unit 312",
+    "city": "Plano",
+    "zipCode": "75024",
+    "state": "TX",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "addressLine1": "1112 RidgeDrive Road",
+    "addressLine2": "Suite 19",
+    "city": "irving",
+    "zipCode": "70253",
+    "state": "TX",
+    "country": "USA"
+  }
+}' mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to postAccountFlow" doc:id="e36ed4af-9c44-4241-92c7-472a4a5a86e9" name="postAccountFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="cb06e1a5-6c51-4d40-8f1c-a38e486a9189" expression="#[payload[0].id]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

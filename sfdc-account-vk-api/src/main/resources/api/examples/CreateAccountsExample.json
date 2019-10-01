@@ -1,0 +1,26 @@
+{
+  "accountName": "BIG Canada",
+  "accountNumber": "BIGCAN110",
+  "ownerFirstName": "Mary",
+  "ownerLastname": "Kondo",
+  "accountSite": "CAN110Y",
+  "accountType": "Customer-Direct",
+  "createdDate": "2019-09-10T14:00:00.000Z",
+  "createdBy": "vk6774",
+  "billingAddress": {
+    "addressLine1": "6900 Legacy Drive",
+    "addressLine2": "",
+    "city": "Plano",
+    "zipCode": "75024",
+    "state": "TX",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "addressLine1": "8104 McArthur Road",
+    "addressLine2": "",
+    "city": "irving",
+    "zipCode": "70253",
+    "state": "TX",
+    "country": "USA"
+  }
+}

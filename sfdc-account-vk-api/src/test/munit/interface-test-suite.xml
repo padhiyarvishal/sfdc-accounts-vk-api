@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="interface-test-suite.xml" />
+	<munit:test name="Interface-test-suite-sfdc-accounts-vk-apiraml-trueValues" doc:id="0555f0f7-0f05-42d9-878e-d69fce340557" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="51099161-39e6-4f23-b318-05f4ae7d5a59" processor="salesforce:create">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create salesforce account" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[
+[
+  {
+    errors: [] as Array {class: "java.util.ArrayList"},
+    id: "1234" as String {class: "java.lang.String"},
+    success: true as Boolean {class: "java.lang.Boolean"}
+  } as Object {class: "java.util.LinkedHashMap"}
+] as Array {encoding: "UTF-8", mediaType: "application/java", mimeType: "application/java", class: "java.util.ArrayList"}
+]' mediaType="application/java" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="2bacfbc5-3291-48ea-92b4-261ff8dd451a" >
+				<munit:payload value='{
+  "accountName": "CanadianyuuyDale123",
+  "accountNumber": "Arizonrk342123",
+  "accountSite": "13YWWONTARIO13",
+  "accountType": "Customer - Direct",
+  "billingAddress": {
+    "addressLine1": "6310 Preston Road",
+    "addressLine2": "Unit 312",
+    "city": "Plano",
+    "zipCode": "75024",
+    "state": "TX",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "addressLine1": "1099 RidgeDrive Road",
+    "addressLine2": "Suite 120",
+    "city": "irving",
+    "zipCode": "70253",
+    "state": "TX",
+    "country": "USA"
+  }
+}' mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sfdc-accounts-vk-apiraml-main" doc:id="0d49225c-8349-4517-92e5-055f26f087ff" name="postAccountFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals statusCode 200" doc:id="911e824f-7b4a-46af-9105-5b4f4dee614a" actual="#[vars.httpStatus]" expected='201' message='"Success HTTP Status code"'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Interface-test-suite-sfdc-accounts-vk-apiraml-falseValues" doc:id="3dfa8f7d-d96c-449e-a980-a46f9d07df03" description="Test">
+			<munit:behavior>
+				<munit-tools:mock-when doc:name="Mock when" doc:id="389f0b46-88db-4cb2-81aa-39d542255432" processor="flow-ref">
+					<munit-tools:with-attributes>
+						<munit-tools:with-attribute whereValue="Create Accounts" attributeName="doc:name" />
+						<munit-tools:with-attribute whereValue="e7f69dd4-9859-45e0-989e-bb854048f3e2" attributeName="doc:id" />
+						<munit-tools:with-attribute whereValue="postAccountFlow" attributeName="name" />
+					</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[
+[
+  {
+    errors: [] as Array {class: "java.util.ArrayList"},
+    id: "1234" as String {class: "java.lang.String"},
+    success: false as Boolean {class: "java.lang.Boolean"}
+  } as Object {class: "java.util.LinkedHashMap"}
+] as Array {encoding: "UTF-8", mediaType: "application/java", mimeType: "application/java", class: "java.util.ArrayList"}
+]' mediaType="application/java" />
+					<munit-tools:attributes value="#[{'statusCode':400}]" />
+				</munit-tools:then-return>
+				</munit-tools:mock-when>
+			</munit:behavior>
+			<munit:execution>
+				<munit:set-event doc:name="EventPayload" doc:id="35fd36e1-95e5-450f-adae-459b4a5f8e41">
+					<munit:payload value='{
+  "accountName": "CanadianGooseYorkDale",
+  "accountNumber": "BigGoose342",
+  "accountSite": "12YONTARIO13",
+  "accountType": "Customer - Direct",
+  "billingAddress": {
+    "addressLine1": "69 Preston Road",
+    "addressLine2": "Unit 312",
+    "city": "Plano",
+    "zipCode": "75024",
+    "state": "TX",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "addressLine1": "21 RidgeDrive Road",
+    "addressLine2": "Suite 19",
+    "city": "irving",
+    "zipCode": "70253",
+    "state": "TX",
+    "country": "USA"
+  }
+}' mediaType="application/json" />
+				</munit:set-event>
+				<flow-ref doc:name="create accounts flow reference" doc:id="64a509d6-66ba-44a2-85e2-d38f961166c0" name="postAccountFlow" />
+			</munit:execution>
+			<munit:validation>
+				<munit-tools:assert-equals doc:name="Assert equals statusCode 400" doc:id="c450d320-cb5b-4cbb-bd6f-10064cbbe930" actual="#[vars.httpStatus]" expected="400" message='"Success HTTP Status code"' />
+			</munit:validation>
+		</munit:test>
+
+</mule>

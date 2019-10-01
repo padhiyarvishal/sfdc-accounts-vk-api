@@ -1,0 +1,31 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+  id?: string | integer
+  accountName: string
+  accountNumber?: string
+  ownerFirstName?: string
+  ownerLastname?: string
+  accountSite?: string
+  active?: 
+   type: string
+   default: Y
+  accountType?: 
+    enum: 
+     - Customer-Channel
+     - Customer-Direct
+  createdDate?: 
+     type: datetime
+     example: 2019-09-10T14:00:00.000Z
+     required: false
+  createdBy?: string
+  billingAddress?:  !include addressDataType.raml
+  shippingAddress?: !include addressDataType.raml
+  lastModifiedDate?: 
+     type: datetime
+     example: 2019-09-10T14:00:00.000Z
+     required: false
+  lastModifiedID?: string | integer
+example: !include ../examples/AccountExample.raml
+
+  

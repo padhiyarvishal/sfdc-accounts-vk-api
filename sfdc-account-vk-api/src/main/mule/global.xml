@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:spring="http://www.mulesoft.org/schema/mule/spring" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/spring http://www.mulesoft.org/schema/mule/spring/current/mule-spring.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1e49ff03-b2aa-4e9e-905f-2d1230236ffa" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" protocol="HTTPS">
+			<tls:context >
+				<tls:key-store type="jks" path="keystore.jks" alias="mule" keyPassword="Welcome$fall19" password="Welcome$fall19" />
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<spring:config name="Spring_Config" doc:name="Spring Config" doc:id="09bfc312-6385-47d3-97c1-1a899f6bb4bc" files="beans.xml" />
+	<spring:security-manager doc:name="Spring Security manager" doc:id="dc41b76b-2d64-481b-9126-0f9462ce1ece" >
+		<spring:delegate-security-provider name="memory-provider" delegate-ref="authenticationManager" />
+	</spring:security-manager>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="80d8eda5-f725-4061-bee6-3cb55e6186ac" >
+		<salesforce:cached-basic-connection username="${secure::sfdc.userName}" password="${secure::sfdc.password}" securityToken="${secure::sfdc.securityToken}" />
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="054f5515-e7ee-4b87-946d-b4a4e0964f01" file="config.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e52bdbd6-ee86-408c-939c-70aacca28b03" file="secure-dev.properties" key="MuleSoft909" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration doc:name="Configuration" doc:id="281396e3-864d-458a-9dec-66b5b4f733e5" defaultErrorHandler-ref="globalError_Handler" />
+	<import doc:name="Import" doc:id="75927b5b-5ab5-4c09-a9cb-56af2917207f" file="error-framework.xml" />
+	<error-handler name="globalError_Handler" doc:id="6b09febd-8fae-4c4c-8ce1-09af9587ece0" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9c3133fd-2aa5-42ea-a882-7ccccd34940c" type="ANY">
+			<flow-ref doc:name="Invoke Common Error FrameWork" doc:id="77bf432c-d0b1-4e99-b6b2-2d041170c9bf" name="error-account-api" />
+			<logger level="INFO" doc:name="Logger - Display Error Type" doc:id="4c197b57-91de-457c-9e57-0eb99575fe36" message="Completed Global Error Handler : #[error.errorType]" />
+		</on-error-continue>
+	</error-handler>
+</mule>

@@ -1,0 +1,89 @@
+[{
+  "id": "89a65789a109G",
+  "accountName": "Burlington Textiles Corp of America",
+  "accountNumber": "CD656092",
+  "ownerFirstName": "John",
+  "ownerLastname": "Doe",
+  "accountSite": "RAL09019",
+  "active": "Y",
+  "accountType": "Customer-Direct",
+  "createdDate": "2019-09-10T14:00:00.000Z",
+  "createdBy": "vk6774",
+  "billingAddress": {
+    "addressLine1": "6900 Legacy Drive",
+    "addressLine2": "",
+    "city": "Plano",
+    "zipCode": "75024",
+    "state": "TX",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "addressLine1": "8104 McArthur Road",
+    "addressLine2": "",
+    "city": "irving",
+    "zipCode": "70253",
+    "state": "TX",
+    "country": "USA"
+  },
+  "lastModifiedDate": "2019-09-10T14:00:00.000Z",
+  "lastModifiedID": "4A9a65789a109K"
+},{
+  "id": "49Az65789a112",
+  "accountName": "Edge Communiations",
+  "accountNumber": "CD451796",
+  "ownerFirstName": "Jane",
+  "ownerLastname": "Doe",
+  "accountSite": "NYL09019",
+  "active": "Y",
+  "accountType": "Customer-Channel",
+  "createdDate": "2019-09-10T14:00:00.000Z",
+  "createdBy": "vk6774",
+  "billingAddress": {
+    "addressLine1": "7110 Legacy Drive",
+    "addressLine2": "",
+    "city": "Plano",
+    "zipCode": "75024",
+    "state": "TX",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "addressLine1": "8104 McArthur Road",
+    "addressLine2": "",
+    "city": "irving",
+    "zipCode": "70253",
+    "state": "TX",
+    "country": "USA"
+  },
+  "lastModifiedDate": "2019-09-10T14:00:00.000Z",
+  "lastModifiedID": "4A9b6234a109H"
+  },{
+    "id": "987a65789a109G",
+    "accountName": "Pyramid Construction Inc.",
+    "accountNumber": "CC213425",
+    "ownerFirstName": "Chris",
+    "ownerLastname": "Doe",
+    "accountSite": "KL09019",
+    "active": "Y",
+    "accountType": "Customer-Direct",
+    "createdDate": "2019-09-10T14:00:00.000Z",
+    "createdBy": "vk6774",
+    "billingAddress": {
+      "addressLine1": "7110 Legacy Drive",
+      "addressLine2": "",
+      "city": "Plano",
+      "zipCode": "75024",
+      "state": "TX",
+      "country": "USA"
+    },
+    "shippingAddress": {
+      "addressLine1": "8109 McArthur Road",
+      "addressLine2": "",
+      "city": "irving",
+      "zipCode": "70253",
+      "state": "TX",
+      "country": "USA"
+    },
+    "lastModifiedDate": "2019-09-10T14:00:00.000Z",
+    "lastModifiedID": 89180
+    }
+  ]

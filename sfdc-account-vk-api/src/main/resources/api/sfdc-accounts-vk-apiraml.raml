@@ -1,0 +1,143 @@
+#%RAML 1.0
+version: 1.0
+title: SFDC Accounts VK API
+mediaType: application/json
+
+types:
+  AddressInfo: !include dataTypes/addressDataType.raml
+  Accounts: !include dataTypes/accountsDataType.raml
+  Account: !include dataTypes/accountsDataType.raml
+  ErrorResponse:   !include dataTypes/ErrorResponse.raml
+  SuccessResponse: !include dataTypes/SuccessResponse.raml
+
+traits:
+  cacheable: !include exchange_modules/68ef9520-24e9-4cf2-b2f5-620025690913/training-cacheable-trait/1.0.1/Cacheable.raml
+  hasAcceptHeader: !include traits/hasAcceptHeader.raml
+  accountSearch: !include traits/searchable.raml
+securitySchemes:
+  basiAuth: !include security/basicAuthsecurityScheme.raml
+
+securedBy: [ basiAuth ]
+
+/accounts:
+ displayName: Accounts
+ description: |
+    - Retrieve accounts information 
+    - Create a new account
+ get:
+  displayName: Retrieve accounts
+  description: |
+   Retrieve all the accounts information
+  is:
+    - cacheable
+    - hasAcceptHeader
+    - accountSearch
+  queryParameters:
+   AccountType:
+    required: false
+    enum:
+     - Business
+     - Personal
+  responses:
+    200:
+      body:
+        application/json:
+          type: Accounts[]
+          example: !include examples/AccountsExample.json
+    404:
+      body:
+       type: !include dataTypes/ErrorResponse.raml
+    406:
+      body:
+       type: !include dataTypes/ErrorResponse.raml
+ post:
+  description: |
+   Create new accounts
+  body:
+    application/json:
+      example: !include examples/CreateAccountsExample.json
+  responses:
+    201:
+      headers:
+        Location:
+         description: URL of the new customer information
+      body:
+        application/json:
+          example: |
+            {
+              "id": "89A78u4Cd24",
+              "accountName": "Burlington Textiles Corp of America"
+            }
+    400:
+     body:
+       application/json:
+         type: ErrorResponse
+          
+    503:
+     description: The processing has failed
+     body:
+      type: ErrorResponse
+
+ /{account_id}:
+   displayName: Account ID
+   description: |
+    - Retrieve account for a given account ID
+    - Modify account for a given account ID
+    - Delete account for a given account ID
+    
+   get:
+    description: Retrieve account information for an account ID
+    headers:
+      Accept?:
+       description: specify the media typr of the response to be returned
+       example: application/json
+    responses:
+      200:
+        headers:
+          Cache-Control:
+          Expires:
+        body:
+         type: Accounts
+         example: !include examples/AccountExample.json
+          
+      404:
+        body:
+         type: ErrorResponse
+      406:
+       body:
+        type: ErrorResponse
+   put:
+    description: |
+       - Modify/Update account information for an account ID
+    body:
+        application/json:
+          example: !include examples/UpdateAccountsExample.json
+    responses:
+        200:
+         body:
+           application/json:
+            example: |
+             {
+              "id": "89A78u4Cd24",
+              "accountName": "Burlington Textiles Corp of America"
+             }
+        201:
+          headers:
+            Location:
+          body:
+        501:
+          body:
+            type: ErrorResponse
+   delete:
+    description: |
+      - Delete account information for an account ID
+    responses:
+      200:
+        body:
+         type: SuccessResponse
+      400:
+       body:
+         application/json:
+           type: ErrorResponse
+             
+  

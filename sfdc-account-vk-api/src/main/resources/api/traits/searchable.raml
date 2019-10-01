@@ -1,0 +1,31 @@
+#%RAML 1.0 Trait
+# This trait is added for resting queryparameters searchable/pageable
+queryParameters:
+ NumberOfRecs?:
+  displayName: maxRecords
+  description:  Retreivet the max records input
+  type: integer
+  example: 25
+  default: 10
+  minimum: 1
+  required: false
+ offset?:
+  displayName: Skip Elements
+  description: Skip over number of elements by specifying an offset
+  type: integer
+  example: 20
+  minimum: 1
+  required: false  
+ order?:
+  displayName: OrderRecords
+  description: Order the records ascending or descending
+  type: string
+  example: 'asc'
+  enum: 
+   - asc
+   - dsc
+  required: false
+ 
+  
+  
+  

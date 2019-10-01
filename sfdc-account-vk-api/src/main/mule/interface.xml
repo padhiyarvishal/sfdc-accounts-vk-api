@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+      xmlns="http://www.mulesoft.org/schema/mule/core" 
+      xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" 
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" 
+      xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    
+    
+ <apikit:config name="sfdc-accounts-vk-apiraml-config" raml="sfdc-accounts-vk-apiraml.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    
+
+    <flow name="sfdc-accounts-vk-apiraml-main">
+        <http:listener path="/api/*" config-ref="HTTP_Listener_config" doc:name="HTTPS Account Listener" allowedMethods="GET,POST,PUT,DELETE">
+            <http:response statusCode="#[vars.httpStatus default 200]" />
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+	
+			<logger level="INFO" doc:name="Logger" doc:id="18c7fbe9-63bb-41b8-a905-36b8c9035b8b" />
+		<tracking:custom-event doc:name="Starting Process Business Event" doc:id="5d50e678-bb9c-42cb-9706-660162bfac14" event-name="accountStartEvent">
+			<tracking:meta-data key="transactionId" value="#[correlationId]" />
+			<tracking:meta-data key="requestUri" value="#[attributes.requestUri]" />
+			<tracking:meta-data key="method" value="#[attributes.method]" />
+		</tracking:custom-event>
+		<tracking:transaction doc:name="Set Transaction Id" doc:id="2ff6f1a6-7e3d-403c-9464-be46a1931486" id="#[correlationId]"/>
+		<http:basic-security-filter doc:name="Basic Authentication" doc:id="a23f6fa5-8e01-4df3-84dd-ee98c9dcfc30" realm="mule" >
+			<error-mapping sourceType="HTTP:BASIC_AUTHENTICATION" targetType="APP:INVALID_AUTHORIZATION" />
+			<error-mapping sourceType="SERVER_SECURITY" targetType="APP:AUTH_DENIED" />
+		</http:basic-security-filter>
+	
+		<apikit:router config-ref="sfdc-accounts-vk-apiraml-config" />
+        <flow-ref doc:name="End Flow Result" doc:id="02f5719c-0e5b-4b7d-8545-a02735ab0151" name="finalResultflow" />
+		<error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST" enableNotifications="true" logException="true">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="7ba9ea5c-b122-45db-856a-2a1aebd66d96">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+				<flow-ref doc:name="End Flow Result" doc:id="a4e5a7e1-25ab-45e1-bf7b-712772831b14" name="finalResultflow"/>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="5471a25f-4ce4-4840-a87e-755d6c7d30a6">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+				<flow-ref doc:name="End Flow Result" doc:id="6b6d521f-a340-49f3-b67c-d92743bd8119" name="finalResultflow" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+				<flow-ref doc:name="End Flow Result" doc:id="4441b3a8-daa6-493d-9099-90b943306bf1" name="finalResultflow" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="f132b399-4dd5-4757-a1e1-4d4582ecdaf4">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[406]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+				<flow-ref doc:name="End Flow Result" doc:id="a5477545-150a-481a-9b41-062207efe13c" name="finalResultflow" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="ec8fdc3a-4368-4cd3-9918-851296412dd9">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[415]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+				<flow-ref doc:name="End Flow Result" doc:id="6697a0f1-dd0f-417f-b514-87d06b865181" name="finalResultflow" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="fe3b7ccd-b21d-4e61-8a27-4843a397a03c">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[501]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+				<flow-ref doc:name="End Flow Result" doc:id="63a308fc-522a-4075-97cb-0bc6244d5e9d" name="finalResultflow" />
+            </on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c6c30743-cdf1-4243-9ea9-1ca41f5a4638" type="APP:AUTH_DENIED, APP:INVALID_AUTHORIZATION">
+				<ee:transform doc:name="Bais Auth Error [Map to Json]" doc:id="7a5e884a-3f51-446c-8885-e27facecb7eb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+  accountError: {
+				   "status" : "E",
+				    "errorCode" : "APP-401",
+				    "message" : "Authentication Failed. Please pass Valid Authorization values."       
+      			}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="401" doc:name="httpStatus 401" doc:id="3392b9b1-0dda-478f-a068-b11439df4526" variableName="httpStatus"/>
+				<flow-ref doc:name="End Flow Result" doc:id="fc2af129-a18c-40e3-9602-6e768cf75054" name="finalResultflow" />
+			</on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="finalResultflow" doc:id="96baabc1-8fac-442f-8078-8930bb6e27cc" >
+		<tracking:custom-event doc:name="Final Flow Result" doc:id="512a229e-72bc-42a4-b275-88a3edf250b3" event-name="accountFinalResult">
+			<tracking:meta-data key="transactionId" value="#[correlationId]"/>
+			<tracking:meta-data key="responseCode" value="#[vars.httpsStatus]" />
+		</tracking:custom-event>
+	</flow>
+	<flow name="sfdc-accounts-vk-apiraml-console">
+        <http:listener path="/console/*" config-ref="HTTP_Listener_config">
+            <http:response statusCode="#[vars.httpStatus default 200]" />
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="sfdc-accounts-vk-apiraml-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/spring-security http://www.mulesoft.org/schema/mule/spring-security/current/mule-spring-security.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="1dbaf5b3-c6d0-4a0d-b460-3d772c7869ac">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\accounts\(account_id):sfdc-accounts-vk-apiraml-config">
+        <ee:transform doc:id="f5669f38-2fb4-4efd-b9a0-96aa0e5c1310">
+            <ee:variables>
+                <ee:set-variable variableName="account_id"><![CDATA[attributes.uriParams.account_id]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="putAccountid" doc:id="ce45b226-1d5a-49c1-8890-ef9963c670c1" name="putAccountFlow" />
+    </flow>
+    <flow name="delete:\accounts\(account_id):sfdc-accounts-vk-apiraml-config">
+		<flow-ref doc:name="Delete Account" doc:id="abf80c7f-691b-4643-bfb8-318bb956ad78" name="deleteAccountFlow"/>
+    </flow>
+    <flow name="get:\accounts\(account_id):sfdc-accounts-vk-apiraml-config">
+		<ee:transform doc:name="attributes.uriParams.account_id" doc:id="ada5231d-fb7a-4787-a6a6-35cad353e768">
+			<ee:variables>
+				<ee:set-variable variableName="account_id"><![CDATA[attributes.uriParams.account_id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Get Account Id" doc:id="a9360460-c055-4b57-a5f0-bf240350f69a" name="getAccountId" />
+    </flow>
+    <flow name="get:\accounts:sfdc-accounts-vk-apiraml-config">
+        <flow-ref doc:name=" Get Accounts" doc:id="b2e6777d-4ca4-44b3-923a-673398457839" name="getAccountsFlow" />
+    </flow>
+    <flow name="post:\accounts:sfdc-accounts-vk-apiraml-config">
+        <flow-ref doc:name="Create Accounts" doc:id="e7f69dd4-9859-45e0-989e-bb854048f3e2" name="postAccountFlow" />
+    </flow>
+</mule>

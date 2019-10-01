@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="getAccountsFlow" doc:id="42b2eff5-ffbf-421d-a075-7dbf2dcfeceb" >
+		<logger level="INFO" doc:name="Logger" doc:id="55c26045-f4e2-4f45-b78e-b757040bcdac" />
+		<salesforce:query doc:name="Query Salesforce accounts" doc:id="d5ad9bdd-5333-4f11-a19f-ceedecc3fa20" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >SELECT id,Name, AccountNumber,site,type,BillingStreet,BillingCity,BillingState,BillingPostalCode,billingcountry,billingaddress,shippingstreet,shippingcity,shippingstate,shippingPostalcode,shippingCountry, shippingaddress,createddate,CreatedById,LastmodifiedDate,
+lastModifiedById, active__c from account
+where active__c= 'Yes'</salesforce:salesforce-query>
+		</salesforce:query>
+		<choice doc:name="Does accounts resource exist (Y/N)" doc:id="d39348ef-e93b-4784-a164-c602d559792c" >
+			<when expression="#[payload.Id != null]">
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="ebc8a813-b1a6-49a5-ba22-128fb7fce90c" />
+				<ee:transform doc:name="[Map to Json]" doc:id="6f018bba-26ae-4fb8-b45f-aa56da79f840">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map((payload,indexOfPayload) ->
+{
+	id: payload.Id default "",
+	accountName: payload.Name default "",
+	accountNumber: payload.AccountNumber default "",
+	accountSite: payload.Site default "",
+	active: payload.Active__c default "",
+	accountType: payload.Type default "",
+	createdDate: payload.CreatedDate as String default "",
+	billingAddress: {
+		addressLine1: payload.BillingStreet default "",
+		city: payload.BillingCity default "",
+		zipCode: payload.BillingPostalCode default "",
+		state: payload.BillingState default "",
+		country: payload.BillingCountry default ""
+	},
+	shippingAddress: {
+		addressLine1: payload.ShippingStreet default "",
+		city: payload.ShippingCity default "",
+		zipCode: payload.ShippingPostalCode default "",
+		state: payload.ShippingState default "",
+		country: payload.ShippingCountry default ""
+	},
+	lastModifiedDate: payload.LastModifiedDate as String default ""
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="404" doc:name="Set httpStatus as 404" doc:id="c106d33b-fa0c-47b9-8a8f-371cae3f3d4e" variableName="httpStatus"/>
+				<set-payload value='{ "message": "Resource not found" }' doc:name="Set Payload - Resource Not found" doc:id="9fbf3412-0024-4561-ad13-40d104b724f3" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="postAccountFlow" doc:id="6fb4fa86-d20d-4667-968b-d1792ef60e07" >
+		<logger level="INFO" doc:name="Logger" doc:id="dd7eacca-6b13-4dd4-8eca-fb8095e21de3" message="in the logger"/>
+		<ee:transform doc:name="[Map to Java]" doc:id="0646a4c9-0e43-429e-889d-56c45abbc2a8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Name: payload.accountName,
+	Type: payload.accountType,
+	BillingStreet: (payload.billingAddress.addressLine1
+default "") ++ payload.billingAddress.addressLine2,
+	BillingCity: payload.billingAddress.city,
+	BillingState: payload.billingAddress.state,
+	BillingPostalCode: payload.billingAddress.zipCode,
+	BillingCountry: payload.billingAddress.country,
+	ShippingStreet: (payload.shippingAddress.addressLine1
+default "") ++ payload.shippingAddress.addressLine2,
+	ShippingCity: payload.shippingAddress.city,
+	ShippingState: payload.shippingAddress.state,
+	ShippingPostalCode: payload.shippingAddress.zipCode,
+	ShippingCountry: payload.shippingAddress.country,
+	AccountNumber: payload.accountNumber,
+	Site: payload.accountSite
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="Account" doc:name="Create salesforce account" doc:id="d5d34e2c-e98f-4e5e-943f-dbafc7359f50" config-ref="Salesforce_Config">
+			<error-mapping sourceType="SALESFORCE:INVALID_STRUCTURE_FOR_INPUT_DATA" targetType="APP:INVALID_INPUT_DATA" />
+			<error-mapping sourceType="SALESFORCE:UNKNOWN" targetType="APP:SALESFORCE_SERVER_ERROR" />
+		</salesforce:create>
+		<logger level="INFO" doc:name="Logger" doc:id="d81c2b19-d60f-4700-a584-d8713ba86a3c" message="#[payload]"/>
+		<set-variable value="#[message.payload[0].success]" doc:name="payload Success (True/False)" doc:id="6caff4a4-124d-4a4a-8400-29c7ccbf5c2f" variableName="OutMessage"/>
+		<choice doc:name="Account created (Y/N)" doc:id="ff91b254-686e-48a6-a267-3b5c285e6746" >
+			<when expression="#[message.payload[0].success == true]">
+				<logger level="INFO" doc:name="Logger" doc:id="f842c840-0566-42ee-9f7e-fb52c56c7062" message="payload is successful #[payload]"/>
+				<set-variable value="201" doc:name="Http Status 201 (Created)" doc:id="99831a7e-dd30-42cf-a450-55b49978bf96" variableName="httpStatus"/>
+				<ee:transform doc:name="Success Message - [Map to Json]" doc:id="794251fa-52ed-4ebc-a63a-3adfb3015b0d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id default "",
+	statusCode: vars.httpStatus,
+	message: "Successfully Created Account"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="400" doc:name="Set Variable" doc:id="626e85f2-ec83-40d8-9abc-cc1bc6b07bf1" variableName="httpStatus"/>
+				<ee:transform doc:name="Error Message - [Map to Json]" doc:id="452e0689-41aa-48d4-a36e-d255b74556e6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id default "",
+	statusCode: vars.httpStatus,
+	message: payload01.errors.statusCode,
+	result: "Requested resource not created"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="getAccountId" doc:id="4da71659-e42e-47a8-a28a-c588db44d39f" >
+		<logger level="INFO" doc:name="Logger" doc:id="8cae73ac-8aaf-44ac-8444-7df0cea8ae63" message="#[attributes.uriParams.account_id]"/>
+		<salesforce:query doc:name="Query Salesforce AccountID" doc:id="7cc51a17-729d-4c2b-8335-a4c254513966" config-ref="Salesforce_Config">
+					<error-mapping sourceType="SALESFORCE:INVALID_REQUEST_DATA" targetType="APP:INVALID_ACCOUNT_ID" />
+			<error-mapping sourceType="SALESFORCE:CONNECTIVITY" targetType="APP:SALESFORCE_CONNECTION_FAILURE" />
+			<salesforce:salesforce-query>SELECT id,Name, AccountNumber,site,type,BillingStreet,BillingCity,BillingState,BillingPostalCode,billingcountry,billingaddress,shippingstreet,shippingcity,shippingstate,shippingPostalcode,shippingCountry, shippingaddress,createddate,CreatedById,LastmodifiedDate,
+lastModifiedById, active__c from account
+where id=':account_id'</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"account_id" : attributes.uriParams.account_id
+}]]]></salesforce:parameters>
+				</salesforce:query>
+		<choice doc:name="getAccountId exists (Y/N)" doc:id="6a4ae873-bed4-45b0-8717-966da51eca0e" >
+			<when expression="#[payload.Id != null]">
+				<set-payload value="#[payload]" doc:name="SFDC Query Payload" doc:id="9a1fc49b-5384-4380-b7c1-baf4f00f436e" />
+				<ee:transform doc:name="Success Message-[Map to Json]" doc:id="479c0a7c-6c9c-49a5-b895-8d846dfb966c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map((payload,indexOfPayload) ->
+{
+	id: payload.Id default "",
+	accountName: payload.Name default "",
+	accountNumber: payload.AccountNumber default "",
+	accountSite: payload.Site default "",
+	accountType: payload.Type default "",
+	billingAddress: {
+		addressLine1: payload.BillingStreet default "",
+		city: payload.BillingCity default "",
+		zipCode: payload.BillingPostalCode default "",
+		state: payload.BillingState default "",
+		country: payload.BillingCountry default ""
+	},
+	shippingAddress: {
+		addressLine1: payload.ShippingStreet default "",
+		city: payload.ShippingCity default "",
+		zipCode: payload.ShippingPostalCode default "",
+		state: payload.ShippingState default "",
+		country: payload.ShippingCountry default ""
+	}
+}
+)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="404" doc:name="Set Http Status - 404" doc:id="790079c1-b242-445c-a328-71e90fc469f9" variableName="httpStatus"/>
+				<set-payload value='{ "message": "Resource not found" }' doc:name="Set Payload - Resource not found" doc:id="dc58b620-f078-4cf1-8532-69e397a69e13" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="putAccountFlow" doc:id="a28a3f52-4040-4456-9134-fa0e0c6e6c6c" >
+		<set-variable value="#[payload]" doc:name="payloadVariable" doc:id="e7c76d47-c9df-4906-9656-6abe854c9bf0" variableName="inputVar"/>
+		<salesforce:query doc:name="Query salesforce account" doc:id="f54ac593-17cb-496d-83ce-e2a9dd818209" config-ref="Salesforce_Config">
+			<error-mapping sourceType="SALESFORCE:INVALID_REQUEST_DATA" targetType="APP:INVALID_ACCOUNT_ID" />
+			<error-mapping sourceType="SALESFORCE:UNKNOWN" targetType="APP:SALESFORCE_SERVER_ERROR" />
+			<salesforce:salesforce-query >SELECT id,Name, AccountNumber,site,type,BillingStreet,BillingCity,BillingState,BillingPostalCode,billingcountry,billingaddress,shippingstreet,shippingcity,shippingstate,shippingPostalcode,shippingCountry, shippingaddress,createddate,CreatedById,LastmodifiedDate,
+lastModifiedById, active__c from account
+where id=':account_id'</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"account_id" : attributes.uriParams.account_id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="putAccountId Exists (Y/N)" doc:id="270f3016-780d-4672-baac-1ec8cb0e4deb" >
+			<when expression="#[payload.Id != null]">
+				<ee:transform doc:name="Payload [Map to Java]" doc:id="275ae3a1-30b6-43df-857c-7def4de659a1">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	Id: payload01.Id,
+	Name: vars.inputVar.accountName,
+	Type: vars.inputVar.accountType,
+	BillingStreet: (vars.inputVar.billingAddress.addressLine1
+default "") ++ vars.inputVar.billingAddress.addressLine2,
+	BillingCity: vars.inputVar.billingAddress.city,
+	BillingState: vars.inputVar.billingAddress.state,
+	BillingPostalCode: vars.inputVar.billingAddress.zipCode,
+	BillingCountry: vars.inputVar.billingAddress.country,
+	ShippingStreet: (vars.inputVar.shippingAddress.addressLine1
+default "") ++ vars.inputVar.shippingAddress.addressLine2,
+	ShippingCity: vars.inputVar.shippingAddress.city,
+	ShippingState: vars.inputVar.shippingAddress.state,
+	ShippingPostalCode: vars.inputVar.shippingAddress.zipCode,
+	ShippingCountry: vars.inputVar.shippingAddress.country,
+	AccountNumber: vars.inputVar.accountNumber,
+	Site: vars.inputVar.accountSite
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<salesforce:update type="Account" doc:name="Update salesforce account" doc:id="c78ce9af-2a45-48a9-a4aa-9b99f8a723f1" config-ref="Salesforce_Config">
+					<error-mapping sourceType="SALESFORCE:INVALID_REQUEST_DATA" targetType="APP:INVALID_ACCOUNT_UPDATE_DATA" />
+				</salesforce:update>
+				<logger level="INFO" doc:name="Logger" doc:id="214356bc-11ea-415a-a0df-f33e76a9f1a9" message="Payload output Value : #[payload.success]"/>
+				<choice doc:name="Is Update Successful (true/false)" doc:id="0dd52aac-e850-4f19-b62c-6caa84e77c8c" >
+					<when expression="#[message.payload[0].success == true]">
+						<logger level="INFO" doc:name="Logger" doc:id="157f5c10-a1bb-49a8-83c8-3593a828a482" message="Payload updated Successfully" />
+						<ee:transform doc:name="Success Message [Map to Json]" doc:id="5416317c-ecf7-489b-be5c-d69090655b5e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id default "",
+	message: payload01.success as String default "" ++ " Successful Update"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="f0f88d29-7799-4106-8090-ec164f48f531" message="Failed updating Payload"/>
+						<ee:transform doc:name="Error Message [Map to Json]" doc:id="352c1c47-6e57-4313-aecb-3f61838d33d9">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id default "",
+	message: "Payload update failed"
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<set-variable value="404" doc:name="Set https Status 404" doc:id="33d1eeef-f274-441e-8208-303f33190783" variableName="httpStatus"/>
+				<set-payload value='{ "message": "Resource not found to update" }' doc:name="Set Payload - Resource not found" doc:id="7b7653c2-f5bd-4e89-a030-2d68ebcdf9ff" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="deleteAccountFlow" doc:id="2f33b26b-7364-4732-bfb5-6db36d7626a5" >
+		<logger level="INFO" doc:name="Logger" doc:id="b3409164-7616-442e-b09c-8bf6526167b9" message="#[attributes.uriParams.account_id]"/>
+		<salesforce:query doc:name="Query Salesforce Account" doc:id="9faf9bfc-76c4-4378-b4ba-11f9b08dcb82" config-ref="Salesforce_Config">
+			<error-mapping sourceType="SALESFORCE:INVALID_REQUEST_DATA" targetType="APP:INVALID_ACCOUNT_ID" />
+			<salesforce:salesforce-query >select id from account where id=':account_id'</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"account_id" : attributes.uriParams.account_id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="INFO" doc:name="Logger" doc:id="4b14417f-78f7-4492-928b-c6d45f734ef5" message="#[payload]"/>
+		<choice doc:name="deleteAccountId Exists (Y/N)" doc:id="c500b784-a90b-4e45-a743-2ef654ca0c03" >
+			<when expression="#[payload.Id != null]">
+				<ee:transform doc:name="[Map Id to Java]" doc:id="59d6eddd-e247-431a-9652-bacf44a1eddd">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload.Id]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="2f841338-d62d-4024-9e50-5e0f98955ba3" message="#[payload]" />
+				<salesforce:delete doc:name="Delete salesforce account" doc:id="63b26bc2-1312-40ea-b1d3-ca764e017030" config-ref="Salesforce_Config">
+					<error-mapping sourceType="SALESFORCE:INVALID_REQUEST_DATA" targetType="APP:INVALID_DELETE_ACCOUNT_DATA" />
+				</salesforce:delete>
+				<choice doc:name="deleteStatus (true/false)" doc:id="15d9ccef-ae50-4cb5-af15-a219acf8a6ff" >
+					<when expression="#[message.payload[0].success == true]">
+						<logger level="INFO" doc:name="Logger" doc:id="c42ecdeb-20cd-4e15-b9cc-75da5ff0587f" message="Post delete the record process" />
+						<ee:transform doc:name="Delete Success Message [Map to Json]" doc:id="3559f5c1-4877-4360-9c13-465589e561c2">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id default "",
+	message: " Delete Records Successful "
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="26763cd6-678b-428f-a00a-fd144d185840" />
+						<ee:transform doc:name="Delete Error Message [ Map to Json]" doc:id="52eb4714-ef91-4f72-9dfc-2a6791c68d21" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id default "",
+	message: " Delete Records Failure "
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<set-variable value="404" doc:name="Https Status 404" doc:id="f5e6b6dd-cd34-4c52-a673-c561122979b7" variableName="httpStatus"/>
+				<set-payload value='{ "message": "Resource not found for delete" }' doc:name="Set Payload - Resource not found" doc:id="b0651585-c37b-433a-877c-57b41f5225a7" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
