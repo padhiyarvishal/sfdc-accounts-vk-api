@@ -28,10 +28,6 @@
 				<configuration>
 				<sharedLibraries>
                     <sharedLibrary>
-                            <groupId>org.springframework.security</groupId>
-                            <artifactId>spring-security-config</artifactId>
-                        </sharedLibrary>
-                    <sharedLibrary>
                             <groupId>org.springframework</groupId>
                             <artifactId>spring-core</artifactId>
                         </sharedLibrary>
@@ -54,6 +50,10 @@
                     <sharedLibrary>
                             <groupId>org.springframework.security</groupId>
                             <artifactId>spring-security-core</artifactId>
+                        </sharedLibrary>
+                    <sharedLibrary>
+                            <groupId>org.springframework.security</groupId>
+                            <artifactId>spring-security-config</artifactId>
                         </sharedLibrary>
                     </sharedLibraries>
                 </configuration>
@@ -116,11 +116,6 @@
 			  <classifier>mule-plugin</classifier>
 		</dependency>
     	<dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>5.1.6.RELEASE</version>
-        </dependency>
-    	<dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>5.1.9.RELEASE</version>
@@ -179,6 +174,11 @@
             <version>2.2.1</version>
             <classifier>mule-plugin</classifier>
             <scope>test</scope>
+        </dependency>
+    	<dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>5.2.0.RELEASE</version>
         </dependency>
     </dependencies>
 

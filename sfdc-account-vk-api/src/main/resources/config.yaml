@@ -1,5 +1,2 @@
 http:
  port: "8081"
-
-mule:
-  key: "MuleSoft909"

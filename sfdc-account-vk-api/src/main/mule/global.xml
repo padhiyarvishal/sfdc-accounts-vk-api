@@ -25,7 +25,7 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
 		<salesforce:cached-basic-connection username="${secure::sfdc.userName}" password="${secure::sfdc.password}" securityToken="${secure::sfdc.securityToken}" />
 	</salesforce:sfdc-config>
 	<configuration-properties doc:name="Configuration properties" doc:id="054f5515-e7ee-4b87-946d-b4a4e0964f01" file="config.yaml" />
-	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e52bdbd6-ee86-408c-939c-70aacca28b03" file="secure-dev.properties" key="MuleSoft909" >
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e52bdbd6-ee86-408c-939c-70aacca28b03" file="secure-dev.properties" key="${secret.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
 	<configuration doc:name="Configuration" doc:id="281396e3-864d-458a-9dec-66b5b4f733e5" defaultErrorHandler-ref="globalError_Handler" />
